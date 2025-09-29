@@ -60,15 +60,13 @@ const typeMap = {
   '[ID]': {
     type: 'array',
     items: {
-      type: 'string',
-      nullable: true,
+      type: ['string', 'null'],
     },
   },
   '[ID!]': {
     type: 'array',
     items: {
       type: 'string',
-      nullable: false,
     },
   },
   String: {
@@ -78,56 +76,48 @@ const typeMap = {
     type: 'array',
     items: {
       type: 'string',
-      nullable: false,
     },
   },
   '[String]': {
     type: 'array',
     items: {
-      type: 'string',
-      nullable: true,
+      type: ['string', 'null'],
     },
   },
   '[Int]': {
     type: 'array',
     items: {
-      type: 'integer',
-      nullable: true,
+      type: ['integer', 'null'],
     },
   },
   '[Int!]': {
     type: 'array',
     items: {
       type: 'integer',
-      nullable: false,
     },
   },
   '[Float]': {
     type: 'array',
     items: {
-      type: 'number',
-      nullable: true,
+      type: ['number', 'null'],
     },
   },
   '[Float!]': {
     type: 'array',
     items: {
       type: 'number',
-      nullable: false,
     },
   },
   '[Boolean]': {
     type: 'array',
     items: {
-      type: 'boolean',
-      nullable: true,
+      type: ['boolean', 'null'],
     },
   },
   '[Boolean!]': {
     type: 'array',
     items: {
       type: 'boolean',
-      nullable: false,
     },
   },
   Int: { type: 'integer' },
@@ -169,7 +159,6 @@ function fieldDefToOpenApiField(
     nullable = true;
   }
   const openApiType = {
-    nullable,
     items: undefined,
     properties: undefined,
     type: undefined,
@@ -179,30 +168,30 @@ function fieldDefToOpenApiField(
   };
   const typeNameWithoutBang = typeName.replace(/[!]$/, '');
   if (typeMap[typeNameWithoutBang]) {
+    const retVal = Object.assign({}, typeMap[typeNameWithoutBang]);
+    if (nullable) {
+      retVal.type = [retVal.type, 'null'];
+    }
     return {
-      ...typeMap[typeNameWithoutBang],
+      ...retVal,
       description,
-      nullable,
     };
   }
   if (type instanceof GraphQLList) {
     openApiType.type = 'array';
     let itemType = type.ofType;
-    let nullableItems = true;
     if (itemType instanceof GraphQLNonNull) {
-      nullableItems = false;
       itemType = itemType.ofType;
     }
     if (itemType instanceof GraphQLObjectType) {
       openApiType.items = {
-        type: 'object',
+        type: ['object', 'null'],
         properties: {},
       };
     }
     if (itemType instanceof GraphQLUnionType) {
       openApiType.items = {
-        anyOf: [],
-        nullable: nullableItems,
+        anyOf: [], // Maybe ref to null ?!?
       };
     }
     if (itemType instanceof GraphQLScalarType) {
@@ -211,7 +200,7 @@ function fieldDefToOpenApiField(
         scalarConfig,
         onUnknownScalar
       );
-      openApiType.items.nullable = nullableItems;
+      openApiType.items.type = [openApiType.items.type, 'null'];
     }
     return openApiType;
   }
@@ -221,14 +210,12 @@ function fieldDefToOpenApiField(
     return openApiType;
   }
   if (type instanceof GraphQLEnumType) {
-    openApiType.type = 'string';
+    openApiType.type = nullable ? ['string', 'null'] : 'string';
     openApiType.enum = type.getValues().map((v) => v.value);
-    openApiType.nullable = nullable;
     return openApiType;
   }
   if (type instanceof GraphQLUnionType) {
-    openApiType.anyOf = [];
-    openApiType.nullable = nullable;
+    openApiType.anyOf = []; // Maybe ref to null ?!?
     return openApiType;
   }
   const scalarType = type as GraphQLScalarType;
@@ -236,7 +223,6 @@ function fieldDefToOpenApiField(
   return {
     ...t,
     description,
-    nullable,
   };
 }
 
@@ -274,8 +260,7 @@ function recurseInputType(
       {}
     );
     return {
-      type: 'object',
-      nullable: true,
+      type: ['object', 'null'],
       description: inputObjectType.description || undefined,
       properties,
     };
@@ -284,8 +269,7 @@ function recurseInputType(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const list = obj as GraphQLList<any>;
     return {
-      type: 'array',
-      nullable: true,
+      type: ['array', 'null'],
       items: recurseInputType(
         list.ofType,
         depth + 1,
@@ -298,33 +282,28 @@ function recurseInputType(
     const { name } = obj;
     if (name === 'Float') {
       return {
-        type: 'number',
-        nullable: true,
+        type: ['number', 'null'],
       };
     }
     if (name === 'Int') {
       return {
-        type: 'integer',
-        nullable: true,
+        type: ['integer', 'null'],
       };
     }
     if (name === 'String') {
       return {
-        type: 'string',
-        nullable: true,
+        type: ['string', 'null'],
       };
     }
     if (name === 'Boolean') {
       return {
-        type: 'boolean',
-        nullable: true,
+        type: ['boolean', 'null'],
       };
     }
     // istanbul ignore else
     if (name === 'ID') {
       return {
-        type: 'string',
-        nullable: true,
+        type: ['string', 'null'],
       };
     }
     return getScalarType(name, scalarConfig, onUnknownScalar);
@@ -332,9 +311,8 @@ function recurseInputType(
   if (obj instanceof GraphQLEnumType) {
     const enumValues = obj.getValues();
     return {
-      type: 'string',
+      type: ['string', 'null'],
       description: obj.description || undefined,
-      nullable: true,
       enum: enumValues.map(({ name }) => name),
     };
   }
@@ -342,15 +320,21 @@ function recurseInputType(
   if (obj instanceof GraphQLNonNull) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const nonNull = obj as GraphQLNonNull<any>;
-    return {
+    const retVal = {
       ...recurseInputType(
         nonNull.ofType,
         depth + 1,
         scalarConfig,
         onUnknownScalar
       ),
-      nullable: false,
     };
+    if (Array.isArray(retVal.type)) {
+      retVal.type = retVal.type.filter((entry) => entry !== 'null');
+      if (retVal.type.length === 1) {
+        retVal.type = retVal.type[0];
+      }
+    }
+    return retVal;
   }
   // istanbul ignore next
   throw new Error(`Unexpected InputType: ${obj}`);
@@ -413,7 +397,7 @@ export class GraphQLToOpenAPIConverter {
       };
     }
     let openApiSchema = {
-      openapi: '3.0.3',
+      openapi: '3.1.0',
       info: {
         title: 'Not specified',
         license: {
@@ -452,7 +436,10 @@ export class GraphQLToOpenAPIConverter {
               };
             } else {
               openApiType = {
-                type: 'object',
+                type:
+                  fragmentType instanceof GraphQLNonNull
+                    ? 'object'
+                    : ['object', 'null'],
                 properties: {},
               };
             }
@@ -514,11 +501,14 @@ export class GraphQLToOpenAPIConverter {
             scalarConfig,
             onUnknownScalar
           );
-          if (t.type === 'object' || t.type === 'array') {
+          if (
+            isOfTypeOrContains(t.type, 'object') ||
+            isOfTypeOrContains(t.type, 'array')
+          ) {
             operationDef.get.parameters.push({
               name: variable.name.value,
               in: 'query',
-              required: !t.nullable,
+              required: !isOfTypeOrContains(t.type, 'null'),
               schema: {
                 type: t.type,
                 items: t.items,
@@ -530,7 +520,7 @@ export class GraphQLToOpenAPIConverter {
             operationDef.get.parameters.push({
               name: variable.name.value,
               in: 'query',
-              required: !t.nullable,
+              required: !isOfTypeOrContains(t.type, 'null'),
               schema: {
                 type: t.type,
               },
@@ -565,22 +555,22 @@ export class GraphQLToOpenAPIConverter {
               onUnknownScalar
             );
             const parentObj = currentSelection[0].openApiType;
-            if (parentObj.type === 'object') {
+            if (isOfTypeOrContains(parentObj.type, 'object')) {
               parentObj.properties[name] = openApiType;
             } else {
               // array
               parentObj.items.properties[name] = openApiType;
             }
             if (
-              openApiType.type === 'array' &&
-              openApiType.items?.type === 'object'
+              isOfTypeOrContains(openApiType.type, 'array') &&
+              isOfTypeOrContains(openApiType.items?.type, 'object')
             ) {
               currentSelection.unshift({
                 node,
                 openApiType,
               });
             } else if (
-              openApiType.type === 'array' &&
+              isOfTypeOrContains(openApiType.type, 'array') &&
               openApiType.items?.anyOf
             ) {
               currentSelection.unshift({
@@ -592,7 +582,7 @@ export class GraphQLToOpenAPIConverter {
                 node,
                 openApiType,
               });
-            } else if (openApiType.type === 'object') {
+            } else if (isOfTypeOrContains(openApiType.type, 'object')) {
               currentSelection.unshift({
                 node,
                 openApiType,
@@ -612,13 +602,10 @@ export class GraphQLToOpenAPIConverter {
           enter(node) {
             const openApiType = {
               type: 'object',
-              nullable: undefined,
               properties: {},
             };
             const topOfStack = currentSelection[0].openApiType;
             if (topOfStack.items?.anyOf) {
-              const nullable = topOfStack.items.nullable;
-              openApiType.nullable = nullable;
               topOfStack.items.anyOf.push(openApiType);
             } else {
               topOfStack.anyOf.push(openApiType);
@@ -643,4 +630,14 @@ export class GraphQLToOpenAPIConverter {
       openApiSchema,
     };
   }
+}
+
+function isOfTypeOrContains(typeDef, typeName): boolean {
+  if (!typeDef) return false;
+  if (typeof typeDef === 'string') {
+    return typeName === typeDef;
+  } else if (Array.isArray(typeDef)) {
+    return typeDef.includes(typeName);
+  }
+  return false;
 }
