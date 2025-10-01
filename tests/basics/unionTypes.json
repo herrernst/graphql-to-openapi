@@ -86,7 +86,7 @@
                                         "type": ["string", "null"]
                                       }
                                     },
-                                    "type": "object"
+                                    "type": ["object", "null"]
                                   },
                                   {
                                     "properties": {
@@ -102,10 +102,9 @@
                                         "type": ["string", "null"]
                                       }
                                     },
-                                    "type": "object"
+                                    "type": ["object", "null"]
                                   }
-                                ],
-                                "nullable": true
+                                ]
                               }
                             },
                             "type": "object"

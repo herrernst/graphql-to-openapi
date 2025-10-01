@@ -47,11 +47,11 @@ paths:
                                 type:
                                   - string
                                   - "null"
-                            type: object
+                            type: [object, "null"]
                           - properties:
                               str1:
                                 type: string
-                            type: object
+                            type: [object, "null"]
                           - properties:
                               simpleObjectWithNonNulls:
                                 properties:
@@ -60,8 +60,7 @@ paths:
                                 type:
                                   - object
                                   - "null"
-                            type: object
-                        nullable: true
+                            type: [object, "null"]
                     type:
                       - object
                       - "null"
