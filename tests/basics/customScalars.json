@@ -6,7 +6,7 @@
     "title": "Not specified",
     "version": "Not specified"
   },
-  "openapi": "3.0.3",
+  "openapi": "3.1.0",
   "paths": {
     "/customScalarsQuery": {
       "get": {
@@ -28,29 +28,23 @@
                   "properties": {
                     "arrayOfCustomScalars": {
                       "items": {
-                        "nullable": false,
                         "type": "string"
                       },
-                      "nullable": false,
                       "type": "array"
                     },
                     "customScalar": {
-                      "nullable": true,
                       "type": "string"
                     },
                     "someObject": {
-                      "nullable": true,
                       "properties": {
                         "customScalar": {
-                          "nullable": true,
-                          "type": "string"
+                          "type": ["string", "null"]
                         },
                         "integer": {
-                          "nullable": true,
-                          "type": "integer"
+                          "type": ["integer", "null"]
                         }
                       },
-                      "type": "object"
+                      "type": ["object", "null"]
                     }
                   },
                   "type": "object"

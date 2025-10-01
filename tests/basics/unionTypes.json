@@ -6,7 +6,7 @@
     "title": "Not specified",
     "version": "Not specified"
   },
-  "openapi": "3.0.3",
+  "openapi": "3.1.0",
   "paths": {
     "/queryInvolvingUnionTypes": {
       "get": {
@@ -30,63 +30,52 @@
                       "items": {
                         "anyOf": [
                           {
-                            "nullable": false,
                             "properties": {
                               "adultFur": {
-                                "nullable": true,
                                 "properties": {
                                   "color": {
-                                    "nullable": true,
-                                    "type": "string"
+                                    "type": ["string", "null"]
                                   },
                                   "texture": {
                                     "enum": [
                                       "soft",
                                       "matted"
                                     ],
-                                    "nullable": false,
                                     "type": "string"
                                   }
                                 },
-                                "type": "object"
+                                "type": ["object", "null"]
                               }
                             },
                             "type": "object"
                           },
                           {
-                            "nullable": false,
                             "properties": {
                               "adultFurs": {
                                 "items": {
                                   "anyOf": [
                                     {
-                                      "nullable": false,
                                       "properties": {
                                         "texture": {
                                           "enum": [
                                             "soft",
                                             "matted"
                                           ],
-                                          "nullable": false,
                                           "type": "string"
                                         }
                                       },
                                       "type": "object"
                                     },
                                     {
-                                      "nullable": false,
                                       "properties": {
                                         "color": {
-                                          "nullable": true,
-                                          "type": "string"
+                                          "type": ["string", "null"]
                                         }
                                       },
                                       "type": "object"
                                     }
-                                  ],
-                                  "nullable": false
+                                  ]
                                 },
-                                "nullable": false,
                                 "type": "array"
                               },
                               "puppyFur": {
@@ -94,8 +83,7 @@
                                   {
                                     "properties": {
                                       "color": {
-                                        "nullable": true,
-                                        "type": "string"
+                                        "type": ["string", "null"]
                                       }
                                     },
                                     "type": "object"
@@ -103,8 +91,7 @@
                                   {
                                     "properties": {
                                       "color": {
-                                        "nullable": true,
-                                        "type": "string"
+                                        "type": ["string", "null"]
                                       },
                                       "texture": {
                                         "enum": [
@@ -112,8 +99,7 @@
                                           "soft",
                                           "shaggy"
                                         ],
-                                        "nullable": true,
-                                        "type": "string"
+                                        "type": ["string", "null"]
                                       }
                                     },
                                     "type": "object"
@@ -124,10 +110,8 @@
                             },
                             "type": "object"
                           }
-                        ],
-                        "nullable": false
+                        ]
                       },
-                      "nullable": false,
                       "type": "array"
                     }
                   },
