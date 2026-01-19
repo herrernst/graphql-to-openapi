@@ -1,0 +1,41 @@
+fragment FurOrHairFragment on FurOrHair {
+  ... on Fur {
+    color
+  }
+  ... on Hair {
+    color
+    texture
+  }
+}
+
+fragment AdultFursFragment on FurOrHair {
+  ... on Fur {
+    texture
+  }
+  ... on Hair {
+    color
+  }
+}
+
+query queryInvolvingUnionTypes($name: String!) {
+  favoritePets(
+    name: $name
+  ) {
+    ... on Cat {
+      adultFur {
+        color
+        texture
+      }
+    }
+    ... on Dog {
+      # spread works on single object
+      puppyFur {
+        ...FurOrHairFragment
+      }
+      # spread doesn't work on array
+      adultFurs {
+        ...AdultFursFragment
+      }
+    }
+  }
+}
