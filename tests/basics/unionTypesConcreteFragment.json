@@ -1,0 +1,79 @@
+{
+  "info": {
+    "license": {
+      "name": "Not specified"
+    },
+    "title": "Not specified",
+    "version": "Not specified"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/queryWithConcreteFragmentOnUnionArray": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "favoritePets": {
+                      "items": {
+                        "anyOf": [
+                          {
+                            "nullable": false,
+                            "properties": {
+                              "adultFurs": {
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "nullable": false,
+                                      "properties": {
+                                        "color": {
+                                          "nullable": true,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "type": "object"
+                                    }
+                                  ],
+                                  "nullable": false
+                                },
+                                "nullable": false,
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          }
+                        ],
+                        "nullable": false
+                      },
+                      "nullable": false,
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "response"
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ]
+}

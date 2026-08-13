@@ -556,7 +556,16 @@ export class GraphQLToOpenAPIConverter {
             const openApiType = currentSelection[0].openApiType;
             const fragment = fragments[node.name.value];
             if (openApiType.anyOf) {
-              openApiType.anyOf = fragment.anyOf;
+              // If the fragment targets a union type it has anyOf members; if it
+              // targets a concrete type it is treated as a single anyOf member.
+              openApiType.anyOf = fragment.anyOf ?? [fragment];
+            } else if (openApiType.items?.anyOf) {
+              const nullable = openApiType.items.nullable;
+              // If the fragment targets a union type it has anyOf members; if it
+              // targets a concrete type it is treated as a single anyOf member.
+              openApiType.items.anyOf = (fragment.anyOf ?? [fragment]).map(
+                (member) => ({ ...member, nullable })
+              );
             } else if (openApiType.items) {
               openApiType.items.properties = fragment.properties;
             } else {

@@ -1,0 +1,13 @@
+fragment FurFragment on Fur {
+  color
+}
+
+query queryWithConcreteFragmentOnUnionField($name: String!) {
+  favoritePets(name: $name) {
+    ... on Dog {
+      puppyFur {
+        ...FurFragment
+      }
+    }
+  }
+}
