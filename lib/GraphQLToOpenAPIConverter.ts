@@ -558,9 +558,15 @@ export class GraphQLToOpenAPIConverter {
             if (openApiType.anyOf) {
               openApiType.anyOf = fragment.anyOf;
             } else if (openApiType.items) {
-              openApiType.items.properties = fragment.properties;
+              openApiType.items.properties = {
+                ...openApiType.items.properties,
+                ...fragment.properties,
+              };
             } else {
-              openApiType.properties = fragment.properties;
+              openApiType.properties = {
+                ...openApiType.properties,
+                ...fragment.properties,
+              };
             }
           },
         },

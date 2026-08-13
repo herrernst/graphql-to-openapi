@@ -1,0 +1,18 @@
+fragment FurColor on Fur {
+  color
+}
+
+fragment FurTexture on Fur {
+  texture
+}
+
+query queryWithMultipleFragmentSpreadsOnSameField($name: String!) {
+  favoritePets(name: $name) {
+    ... on Cat {
+      adultFur {
+        ...FurColor
+        ...FurTexture
+      }
+    }
+  }
+}
