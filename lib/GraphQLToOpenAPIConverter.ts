@@ -546,22 +546,11 @@ export class GraphQLToOpenAPIConverter {
               openApiType.anyOf = fragment.anyOf;
             } else if (openApiType.items?.anyOf) {
               const nullable = openApiType.items.nullable;
-              if (fragment.anyOf) {
-                openApiType.items.anyOf = fragment.anyOf.map((member) => ({
-                  ...member,
-                  nullable,
-                }));
-              } else {
-                // Concrete-type fragment spread on a union array field:
-                // wrap the fragment's properties as a single anyOf member.
-                openApiType.items.anyOf = [
-                  {
-                    type: 'object',
-                    nullable,
-                    properties: fragment.properties,
-                  },
-                ];
-              }
+              // If the fragment targets a union type it has anyOf members; if it
+              // targets a concrete type it is treated as a single anyOf member.
+              openApiType.items.anyOf = (fragment.anyOf ?? [fragment]).map(
+                (member) => ({ ...member, nullable })
+              );
             } else if (openApiType.items) {
               openApiType.items.properties = fragment.properties;
             } else {
