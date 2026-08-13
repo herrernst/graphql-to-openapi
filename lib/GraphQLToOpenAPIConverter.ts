@@ -544,6 +544,12 @@ export class GraphQLToOpenAPIConverter {
             const fragment = fragments[node.name.value];
             if (openApiType.anyOf) {
               openApiType.anyOf = fragment.anyOf;
+            } else if (openApiType.items?.anyOf) {
+              const nullable = openApiType.items.nullable;
+              openApiType.items.anyOf = fragment.anyOf.map((member) => ({
+                ...member,
+                nullable,
+              }));
             } else if (openApiType.items) {
               openApiType.items.properties = fragment.properties;
             } else {
